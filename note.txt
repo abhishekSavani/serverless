@@ -1,7 +1,7 @@
 serverless config credentials --provider aws --key AKIATJ7EIBO66NX6XAXB --secret 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 --profile Serverless_test
 
 ------------------------------
-
+deploye stack : sls deploy -v
 only function deploy : sls deploy function -f create
 
 

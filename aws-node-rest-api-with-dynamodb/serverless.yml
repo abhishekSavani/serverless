@@ -9,6 +9,7 @@ provider:
   profile: Serverless_test
   environment:
     DYNAMODB_TABLE: feedback
+    DYNAMODB_TABLE_CONTACT: contact
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -18,9 +19,13 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
-
+      ##Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+     ### Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE_CONTACT}"
+      Resource:
+        - { "Fn::GetAtt": ["FeedbackDynamoDbTable", "Arn"] } #you will also see the logical IDs below where they are provisioned
+        - { "Fn::GetAtt": ["ContectDynamoDbTable", "Arn"] }
 functions:
+  ## feedback
   create:
     handler: feedback/create.create
     events:
@@ -61,6 +66,24 @@ functions:
           method: delete
           cors: true
 
+  ## Contact
+
+  createContact:
+    handler: contact/create.createContact
+    events:
+      - http:
+          path: contact
+          method: post
+          cors: true
+
+  listContact:
+    handler: contact/list.listContact
+    events:
+      - http:
+          path: contact
+          method: get
+          cors: true
+
 resources:
   Resources:
     FeedbackDynamoDbTable:
@@ -79,3 +102,20 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
+    
+    ContectDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE_CONTACT}
