@@ -1,0 +1,114 @@
+service: serverless-expense-tracker
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  environment:
+    EXPENSES_TABLE: { "Ref": "DynamoDbExpenses" } #DynamoDbExpenses is a logicalID also used when provisioning below
+    BUDGETS_TABLE: { "Ref": "DynamoDbBudgets" }
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["DynamoDbExpenses", "Arn"] } #you will also see the logical IDs below where they are provisioned
+        - { "Fn::GetAtt": ["DynamoDbBudgets", "Arn"] }
+functions:
+  create:
+    handler: expenseTracker/create.create
+    events:
+      - http:
+          path: expenses
+          method: post
+          cors: true
+
+  createBudget:
+    handler: expenseTracker/createBudget.createBudget
+    events:
+      - http:
+          path: budgets
+          method: post
+          cors: true
+
+  list:
+    handler: expenseTracker/list.list
+    events:
+      - http:
+          path: expenses
+          method: get
+          cors: true
+
+  listBudgets:
+    handler: expenseTracker/listBudgets.listBudgets
+    events:
+      - http:
+          path: budgets
+          method: get
+          cors: true
+
+  get:
+    handler: expenseTracker/get.get
+    events:
+      - http:
+          path: expenses/{id}
+          method: get
+          cors: true
+
+  update:
+    handler: expenseTracker/update.update
+    events:
+      - http:
+          path: expenses/{id}
+          method: put
+          cors: true
+
+  delete:
+    handler: expenseTracker/delete.delete
+    events:
+      - http:
+          path: expenses/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+      : #this is where the logicalID is defined
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    DynamoDbBudgets: #here too
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

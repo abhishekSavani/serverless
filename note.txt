@@ -16,6 +16,19 @@ POST req :
     "title":"title 3",
     "description": "description 3"
 }
+-----
+
+CONTACT
+-------
+
+{
+    "contactName":"abhishek",
+    "hotline":"111",
+    "referenceId":"123",
+    "status":"pendding",
+    "createdBy":"1",
+    "updatedBy":"1"
+}
 --------------------------------------------------------------------------------------------
 
 demo:

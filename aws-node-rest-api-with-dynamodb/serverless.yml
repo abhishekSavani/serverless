@@ -10,6 +10,7 @@ provider:
   environment:
     DYNAMODB_TABLE: feedback
     DYNAMODB_TABLE_CONTACT: contact
+    DYNAMODB_TABLE_USER: user
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -24,6 +25,7 @@ provider:
       Resource:
         - { "Fn::GetAtt": ["FeedbackDynamoDbTable", "Arn"] } #you will also see the logical IDs below where they are provisioned
         - { "Fn::GetAtt": ["ContectDynamoDbTable", "Arn"] }
+        - { "Fn::GetAtt": ["UserDynamoDbTable", "Arn"] }
 functions:
   ## feedback
   create:
@@ -119,3 +121,20 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TABLE_CONTACT}
+
+    UserDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE_USER}
